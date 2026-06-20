@@ -1,0 +1,24 @@
+Java & Spring Boot ignores
+
+core/target/
+*.class
+*.jar
+*.war
+
+IDE ignores
+
+.vscode/
+.idea/
+*.iml
+
+Python & Django ignores
+
+ai_engine/venv/
+ai_engine/pycache/
+ai_engine/db.sqlite3
+*.pyc
+
+OS ignores
+
+.DS_Store
+Thumbs.db
