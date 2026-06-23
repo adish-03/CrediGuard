@@ -1,21 +1,21 @@
 package com.crediguard.core.model;
 
-import java.util.UUID; // Import standard Java UUID
+import java.util.UUID;
 
-// No more @Entity! Just a pure POJO.
 public class CreditApplication {
-    
     private String applicationId;
     private String applicantName;
-    private double annualIncome;
-    private double totalDebt;
+    private Double annualIncome;
+    private Double totalDebt;
+    private Double riskScore;
+    private String complianceNote;
+    
+    // NEW: Strict Enterprise Boolean status (True = Approved, False = Denied)
+    private Boolean isApproved;
 
-    // Constructor to generate the ID automatically when created
     public CreditApplication() {
         this.applicationId = UUID.randomUUID().toString();
     }
-
-    // ... KEEP ALL YOUR GETTERS AND SETTERS BELOW THIS LINE ...
 
     public String getApplicationId() { return applicationId; }
     public void setApplicationId(String applicationId) { this.applicationId = applicationId; }
@@ -23,9 +23,19 @@ public class CreditApplication {
     public String getApplicantName() { return applicantName; }
     public void setApplicantName(String applicantName) { this.applicantName = applicantName; }
 
-    public double getAnnualIncome() { return annualIncome; }
-    public void setAnnualIncome(double annualIncome) { this.annualIncome = annualIncome; }
+    public Double getAnnualIncome() { return annualIncome; }
+    public void setAnnualIncome(Double annualIncome) { this.annualIncome = annualIncome; }
 
-    public double getTotalDebt() { return totalDebt; }
-    public void setTotalDebt(double totalDebt) { this.totalDebt = totalDebt; }
+    public Double getTotalDebt() { return totalDebt; }
+    public void setTotalDebt(Double totalDebt) { this.totalDebt = totalDebt; }
+
+    public Double getRiskScore() { return riskScore; }
+    public void setRiskScore(Double riskScore) { this.riskScore = riskScore; }
+
+    public String getComplianceNote() { return complianceNote; }
+    public void setComplianceNote(String complianceNote) { this.complianceNote = complianceNote; }
+
+    // NEW Getter and Setter for the Boolean Status
+    public Boolean getIsApproved() { return isApproved; }
+    public void setIsApproved(Boolean isApproved) { this.isApproved = isApproved; }
 }
