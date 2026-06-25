@@ -20,7 +20,7 @@ public class CreditRepository {
         System.out.println("JDBC: The isApproved boolean status is currently: " + application.getIsApproved());
 
         // UPDATED: Added is_approved to the INSERT statement (Now 7 columns and 7 question marks)
-        String sql = "INSERT INTO credit_application (application_id, applicant_name, annual_income, total_debt, risk_score, compliance_note, is_approved) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO credit_application (application_id, applicant_name, annual_income, total_debt, risk_score, compliance_note, is_approved, dependents, loan_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         jdbcTemplate.update(sql, 
             application.getApplicationId(), 
@@ -29,7 +29,9 @@ public class CreditRepository {
             application.getTotalDebt(),
             application.getRiskScore(),
             application.getComplianceNote(),
-            application.getIsApproved() // NEW
+            application.getIsApproved(),
+            application.getDependents(), // NEW
+            application.getLoanAmount()  // NEW
         );
         System.out.println("JDBC: Raw SQL Insert with Boolean Status executed successfully.");
     }
@@ -46,7 +48,9 @@ public class CreditRepository {
                 app.setTotalDebt(rs.getDouble("total_debt"));
                 app.setRiskScore(rs.getDouble("risk_score"));
                 app.setComplianceNote(rs.getString("compliance_note"));
-                app.setIsApproved(rs.getBoolean("is_approved")); // NEW
+                app.setIsApproved(rs.getBoolean("is_approved"));
+                app.setDependents(rs.getInt("dependents")); // NEW
+                app.setLoanAmount(rs.getDouble("loan_amount")); // NEW
                 return app;
             }, id);
         } catch (EmptyResultDataAccessException e) {

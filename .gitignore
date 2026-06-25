@@ -22,3 +22,7 @@ OS ignores
 
 .DS_Store
 Thumbs.db
+
+Security Secrets
+
+.env

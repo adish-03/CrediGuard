@@ -9,6 +9,9 @@ public class CreditApplication {
     private Double totalDebt;
     private Double riskScore;
     private String complianceNote;
+    private Integer dependents;
+    private Double loanAmount;
+
     
     // NEW: Strict Enterprise Boolean status (True = Approved, False = Denied)
     private Boolean isApproved;
@@ -38,4 +41,10 @@ public class CreditApplication {
     // NEW Getter and Setter for the Boolean Status
     public Boolean getIsApproved() { return isApproved; }
     public void setIsApproved(Boolean isApproved) { this.isApproved = isApproved; }
+
+    public Integer getDependents() { return dependents; }
+    public void setDependents(Integer dependents) { this.dependents = dependents; }
+
+    public Double getLoanAmount() { return loanAmount; }
+    public void setLoanAmount(Double loanAmount) { this.loanAmount = loanAmount; }
 }

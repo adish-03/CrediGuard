@@ -17,6 +17,7 @@ public class CreditService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper; 
 
+    // The Bank Manager wires the Repository and gives us a RestTemplate and ObjectMapper
     public CreditService(CreditRepository creditRepository) {
         this.creditRepository = creditRepository;
         this.restTemplate = new RestTemplate();
@@ -26,53 +27,70 @@ public class CreditService {
     public String processApplication(CreditApplication application) {
         System.out.println("Service: Holding application. Calling Python AI Compliance Engine...");
 
+        // 1. The exact address of our Python Django department
         String pythonApiUrl = "http://localhost:8000/api/v1/compliance/analyze/";
 
         try {
+            // BULLETPROOF FIX 2: Create an official "Envelope" (Headers) telling Python this is strict JSON
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // Manually convert the POJO to a String so Java doesn't use chunks
+            // BULLETPROOF FIX 3: Manually convert the POJO to a raw String to prevent Python 'chunked' hex errors!
             String jsonBody = objectMapper.writeValueAsString(application);
 
-            // Package the String and the Headers together
+            // Put the raw String and the Envelope together into an HttpEntity
             HttpEntity<String> requestEntity = new HttpEntity<>(jsonBody, headers);
 
-            // SEND THE REQUEST TO PYTHON!
+            // 2. SEND THE REQUEST TO PYTHON! 
             Map<String, Object> aiResponse = restTemplate.postForObject(pythonApiUrl, requestEntity, Map.class);
 
-            // Read the Python response
-            boolean isCompliant = (boolean) aiResponse.get("is_compliant");
-            String complianceNote = (String) aiResponse.get("compliance_note");
+            // 3. Read the Python response
+            // THE FIX: Check for both the old key and the new key so the contract never breaks!
+            boolean isCompliant = false;
+            if (aiResponse.containsKey("compliant")) {
+                isCompliant = (boolean) aiResponse.get("compliant");
+            } else if (aiResponse.containsKey("is_compliant")) {
+                isCompliant = (boolean) aiResponse.get("is_compliant");
+            }
             
-            // Safely parse the risk score
-            double riskScore = ((Number) aiResponse.get("risk_score")).doubleValue(); 
+            // BULLETPROOF FIX 4: Safety nets for missing text fields!
+            String complianceNote = "AI Decision recorded, but no note was provided.";
+            if (aiResponse.containsKey("compliance_note") && aiResponse.get("compliance_note") != null) {
+                complianceNote = (String) aiResponse.get("compliance_note");
+            } else if (aiResponse.containsKey("prompt_sent_to_ai") && aiResponse.get("prompt_sent_to_ai") != null) {
+                complianceNote = "AI OFFLINE. Mockup: " + aiResponse.get("prompt_sent_to_ai");
+            }
+            
+            // BULLETPROOF FIX 5: Safely parse the number whether it's an Integer, Double, or entirely missing!
+            double riskScore = 0.0;
+            if (aiResponse.containsKey("risk_score") && aiResponse.get("risk_score") != null) {
+                riskScore = ((Number) aiResponse.get("risk_score")).doubleValue(); 
+            }
 
-            // Attach the AI's math and compliance decision to our Java POJO
+            // NEW: Attach the AI's math to our Java POJO!
             application.setRiskScore(riskScore);
             application.setComplianceNote(complianceNote);
-            
-            // NEW: Set the boolean approved status!
-            application.setIsApproved(isCompliant);
+            application.setIsApproved(isCompliant); // Ensure the boolean vault field gets updated!
 
             System.out.println("Python AI responded with Risk Score: " + riskScore + "%");
 
-            // We save the application to the vault IMMEDIATELY for legal auditing, 
-            // before we even check if they are approved or denied!
-            creditRepository.save(application);
-
+            // 4. Make the final banking decision based on the AI's ruling
             if (!isCompliant) {
                 return "Application DENIED by AI. Reason: " + complianceNote;
             } else {
+                // If AI approves, save it to the Postgres Vault
+                creditRepository.save(application);
                 return "Application " + application.getApplicationId() + " APPROVED! AI Note: " + complianceNote;
             }
 
         } catch (Exception e) {
+            // We added e.printStackTrace() so if it crashes again, the terminal will tell us exactly why!
             e.printStackTrace();
-            return "SYSTEM CRASH REASON: " + e.getMessage();
+            return "SYSTEM ERROR: The AI Compliance Engine is currently offline. Please try again later.";
         }
     }
 
+    // Customer asking for their specific folder (Read Feature)
     public CreditApplication getApplicationStatus(String id) {
         return creditRepository.findById(id);
     }
